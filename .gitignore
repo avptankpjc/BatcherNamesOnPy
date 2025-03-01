@@ -1,0 +1,7 @@
+#Folders Extensions
+.qodo/
+
+
+#Files for compilation
+*.exe
+*.class
