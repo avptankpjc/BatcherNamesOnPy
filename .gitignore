@@ -1,6 +1,8 @@
 #Folders Extensions
 .qodo/
-
+venv/
+.env/
+build/
 
 #Files for compilation
 *.exe
