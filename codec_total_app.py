@@ -1,10 +1,23 @@
 
 
 
-import os
+import os, sys
+
+"""
+if sys.platform == "win32" and hasattr(os, "add_dll_directory"):
+    dll_dir = os.path.join(sys.base_prefix, "DLLs")
+    if os.path.isdir(dll_dir):
+        os.add_dll_directory(dll_dir)
+    else:
+        print(f"Warning: DLL directory not found: {dll_dir}")
+"""
+
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+
+icon_path = "assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico"
+
 
 
 class BatcherNameApp:
@@ -351,9 +364,26 @@ class BatcherNameApp:
             return
         self.canvas.yview_scroll(int(-1 * (event.delta / 100)), "units")
 
-
 if __name__ == "__main__":
     root = tk.Tk()
+    
+    if getattr(sys, 'frozen', False):
+        # Si está congelado con cx_Freeze, usamos la carpeta del ejecutable
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    icon_path = os.path.join(base_dir, "A00_1_Logo_BatcherName_256.ico")
+    #print("Icon path:", icon_path)  # Para verificar la ruta
+
+    if os.path.exists(icon_path):
+        try:
+            root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Error al asignar el icono: {e}")
+    else:
+        print(f"Advertencia: No se encontró el icono en {icon_path}")
+
     app = BatcherNameApp(root) 
     root.mainloop()
 
