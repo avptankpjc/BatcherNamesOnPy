@@ -16,7 +16,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 
-icon_path = "assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico"
+#icon_path = "assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico"
 
 
 
@@ -364,16 +364,19 @@ class BatcherNameApp:
             return
         self.canvas.yview_scroll(int(-1 * (event.delta / 100)), "units")
 
-if __name__ == "__main__":
+
+
+def setapp():
     root = tk.Tk()
     
     if getattr(sys, 'frozen', False):
         # Si está congelado con cx_Freeze, usamos la carpeta del ejecutable
         base_dir = os.path.dirname(sys.executable)
+        icon_path = os.path.join(base_dir, "A00_1_Logo_BatcherName_256.ico")
     else:
         base_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.join(base_dir, "assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico") #version para desarrollo
 
-    icon_path = os.path.join(base_dir, "A00_1_Logo_BatcherName_256.ico")
     #print("Icon path:", icon_path)  # Para verificar la ruta
 
     if os.path.exists(icon_path):
@@ -384,8 +387,19 @@ if __name__ == "__main__":
     else:
         print(f"Advertencia: No se encontró el icono en {icon_path}")
 
+    status_frame = tk.Frame(root, bd=1, relief=tk.SUNKEN)
+    status_frame.pack(side=tk.BOTTOM, fill=tk.X)
+    version_label = tk.Label(status_frame, text="[v1.0.0]", anchor="e")
+    version_label.pack(fill=tk.X)
+
     app = BatcherNameApp(root) 
     root.mainloop()
+
+
+
+
+if __name__ == "__main__":   
+    setapp()
 
 
 
