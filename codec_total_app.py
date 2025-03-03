@@ -137,7 +137,9 @@ class BatcherNameApp:
                                        orient="vertical",
                                        command=self.tree.yview)
         
-        self.tree.configure(yscrollcommand=tree_scrollbar)
+        tree_scrollbar.pack(side="right", fill="y")
+
+        self.tree.configure(yscrollcommand=tree_scrollbar.set)
 
 
         tk.Label(main_frame, 
@@ -585,12 +587,14 @@ def runapp():
 
     status_frame = tk.Frame(root, bd=1, relief=tk.SUNKEN)
     status_frame.pack(side=tk.BOTTOM, fill=tk.X)
-    version_label = tk.Label(status_frame, text="[v1.1.0]", anchor="e")
+    version_label = tk.Label(status_frame, text="[v1.1.1]", anchor="e")
     version_label.pack(fill=tk.X)
+
 
     app = BatcherNameApp(root)
 
     root.mainloop()
+
 
 
 if __name__ == "__main__":

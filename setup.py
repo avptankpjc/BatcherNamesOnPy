@@ -32,12 +32,13 @@ if sys.platform == "win32":
 
 setup(
     name="BatcherNameApp",
-    version="1.1.0",
+    version="1.1.1",
     description="Applications for rename files by batch",
     author="Avptankpowerjc",
     options={"build_exe":build_exe_options},
     executables=[Executable("codec_total_app.py", base=base, icon="assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico") ]
 )
+
 
 
 
