@@ -32,7 +32,7 @@ if sys.platform == "win32":
 
 setup(
     name="BatcherNameApp",
-    version="1.1.1",
+    version="1.1.2",
     description="Applications for rename files by batch",
     author="Avptankpowerjc",
     options={"build_exe":build_exe_options},
