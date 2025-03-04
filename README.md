@@ -54,7 +54,7 @@ No es necesario descargar nada adicional, ya que el programa se distribuye tanto
 
 ## Versión
 
-- **Versión Actual:** 1.1.1
+- **Versión Actual:** 1.1.2
 
 ## Author
 
