@@ -4,7 +4,7 @@ venv/
 .env/
 build/
 assets/releases/
-
+tspass/
 
 #Files for compilation
 *.exe

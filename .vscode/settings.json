@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./model"
+    ],
+    "python.terminal.executeInFileDir": true
+}
