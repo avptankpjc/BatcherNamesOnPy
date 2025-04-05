@@ -3,22 +3,25 @@
 
 import tkinter as tk
 import os, re, sys
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
+from tkinterdnd2 import TkinterDnD, DND_FILES
+
 from model.batchermodel import BatcherModel
+from utils.logger_conf import logger
 
 
 class BatcherViewModel:
     
     def __init__(self, root):
         
-        #self.file_list = []
-        #self.new_nameformat = tk.StringVar()
-        #self.status_message = tk.StringVar(value="Ready");
         self.root = root
         self.view = None
         
         self.selected_files = []
         
+        self.last_selected_folder = self.load_last_selected_folder()
+        
+        #Variables Inputs
         self.new_name = tk.StringVar()
         self.prefix = tk.StringVar()
         self.suffix = tk.StringVar()
@@ -46,23 +49,83 @@ class BatcherViewModel:
     def set_view(self, view):
         self.view = view
         
+     
+    def register_tree(self, tree):
+        tree.drop_target_register(DND_FILES)
+        tree.dnd_bind("<<Drop>>", self.on_drop)
+    
+    
+    def save_last_selected_folder(self):
+        """Save the last folder selected"""
+        try:
+            
+            logger.info("Initialize Save Files")
+            
+            with open("last_selected_folder.txt","w") as file:
+                file.write(self.last_selected_folder)
         
+        except Exception as e:
+            print(f"Error saving last folder: {e}")
+            
+    def load_last_selected_folder(self):
+        """Load the last Folder Selected"""
+        try:
+            
+            if os.path.exists("last_selected_folder.txt"):
+                with open("last_selected_folder.txt", "r") as file:
+                    folder =  file.read().strip()
+                    if os.path.isdir(folder):
+                        return folder
+                    
+        except Exception as e:
+            print(f"Error loading the last folder: {e}")
+            
+        return os.getcwd()
+    
+    
     def select_files(self):
+        initial_dir = self.last_selected_folder
+        
+        # Primero, intentar seleccionar archivos
         files = filedialog.askopenfilenames(
-           title="Select Files",
-           filetypes=(("All Files", "*.*"),
-                      ("Text Files", "*.txt"))
+            title="Select Files",
+            filetypes=(("All Files", "*.*"), ("Text Files", "*.txt")),
+            initialdir=initial_dir
         )
         
         if files:
-            new_files = [f for f in files if f not in self.selected_files ]
-            self.selected_files.extend(new_files)
-            for file in new_files:
-                org_name = os.path.basename(file)
-                item_id = self.view.tree.insert("",
-                                           "end", values=["✓", org_name, "", "Pending"] )
-                self.item_to_file[item_id] = file
-                
+            self._add_files_and_folders(files)
+            self.last_selected_folder = os.path.dirname(files[0])
+            self.save_last_selected_folder()
+            
+    def select_onefolder(self):
+        folder = filedialog.askdirectory(title="Select Folders")
+        
+        if folder:
+            self._add_files_and_folders([folder])
+        
+    
+           
+    def select_folders(self):
+        
+        initial_dir = self.last_selected_folder
+        
+        # Usar el cuadro de diálogo para seleccionar una carpeta
+        folder = filedialog.askdirectory(title="Select Folders", initialdir=initial_dir)
+        
+        if folder:
+            # Verificar si la carpeta no está ya en la lista de archivos seleccionados
+            if folder not in self.selected_files:
+                self.selected_files.append(folder)
+                self._add_files_and_folders([folder])
+
+            val_lis = ["✓", f"[Folder] {os.path.basename(folder)}", "", "Pending"]
+            # Mostrar la carpeta seleccionada en el árbol
+            self.view.tree.insert("", "end", values=val_lis)
+
+            self.last_selected_folder = folder
+            self.save_last_selected_folder()
+            
     
     def toggle_checkbox(self, event):
         region = self.view.tree.identify_region(event.x, event.y)
@@ -83,199 +146,96 @@ class BatcherViewModel:
             if len(current_values) < 4:
                 continue
             self.view.tree.item(item_id, values=[new_state] + list(current_values[1:]))
-           
-    def rename_advance(self, original, new_name_val, 
-                       prefix_val, suffix_val,
-                       enumerated_prefix,
-                       enumeration_number
-                       ):
-        
-        base, ext = os.path.splitext(original)
-        sep = self.separator_var.get()
-        
-        if sep == "custom":
-            sep = self.custom_separator.get()
-            
-        if sep == "none" or sep not in base:
-            new_parts = []
-            if prefix_val:
-                new_parts.append(f"{prefix_val}{enumeration_number:02d}"
-                                 if enumerated_prefix else prefix_val)
-                
-            new_parts.append(new_name_val if new_name_val else base)
-            if suffix_val:
-                new_parts.append(suffix_val)
-                
-            return "_".join(new_parts) + ext
-        
-        mode = self.mode_var.get()
-        
-        if mode == "replace_after":
-            prefix_part, remainder = base.split(sep, 1)
-            m = re.match(r'^(.*)(' + re.escape(sep) + r'\d+)$', remainder)
-
-            if m:
-                core_part = m.group(1)
-                orig_suffix = m.group(2)
-                
-            else:
-                core_part = remainder
-                orig_suffix = ""
-                
-            new_prefix = (f"{prefix_val}{enumeration_number:02d}"
-                          if prefix_val and enumerated_prefix 
-                          else (prefix_val if prefix_val else prefix_part))
-            
-            new_core = new_name_val if new_name_val else core_part
-            
-            if suffix_val:
-                new_suffix = suffix_val if suffix_val.startswith(sep) else sep + suffix_val 
-            else:
-                if self.suffix_mode.get() == "delete":
-                    new_suffix = ""
-                else:
-                    new_suffix = orig_suffix
-                    
-            return new_prefix + sep + new_core + new_suffix + ext 
-        
-        elif mode == "replace_before":
-            parts = base.rsplit(sep, 1)
-            if len(parts) == 2:
-                left_part, right_part = parts
-                orig_suffix = sep + right_part
-                
-            else:
-                left_part = base
-                orig_suffix = ""
-                
-            new_text = new_name_val if new_name_val else (f"{prefix_val}{enumeration_number:02d}"
-                                                          if prefix_val and enumerated_prefix else (prefix_val if prefix_val else left_part))
-            
-            if suffix_val:
-                new_suffix = suffix_val if suffix_val.startswith(sep) else sep + suffix_val
-            
-            else:
-                if self.suffix_mode.get() == "delete":
-                    new_suffix = ""
-                    
-                else:
-                    new_suffix = orig_suffix
-                    
-            return new_text + new_suffix + ext
-        
-        else:
-            new_parts = []
-            
-            if prefix_val:
-                new_parts.append(f"{prefix_val}{enumeration_number:02d}"
-                                 if enumerated_prefix else prefix_val)
-            new_parts.append(new_name_val if new_name_val else base)
-            
-            if suffix_val:
-                new_parts.append(suffix_val)
-            return "_".join(new_parts) + ext
-        
-       
+         
+    
     def rename_files(self):
-        
         new_name_val = self.new_name.get().strip().replace(" ", "_")
         prefix_val = self.prefix.get().strip().replace(" ", "_")
         suffix_val = self.suffix.get().strip().replace(" ", "_")
         
         if not self.selected_files:
-            self.view.show_warning("Not File Selected !!!")
+            self.view.show_warning("No File Selected!!!")
             return
         
         if not new_name_val and not prefix_val and not suffix_val:
-            self.view.show_warning("You must enter a new name, prefix or suffix")
+            self.view.show_warning("You Must Enter a name, prefix or suffix")
             return
         
-        selected_items = [item_id for item_id in self.view.tree.get_children() if self.view.tree.item(item_id, "values")[0] == "✓"]
-        
-        if not selected_items:
-            self.view.show_info("No Changes made because no file was selected. !!!")
-            return
-        
-        new_files = []
-        rename_items = []
-        
-        for item_id in selected_items:
-            file_path = self.item_to_file.get(item_id)
-            if not file_path:
-                continue
-            org_name = os.path.basename(file_path)
-            dir_name = os.path.dirname(file_path)
+        try:
             
-            if self.separator_var.get() != "none" or self.mode_var.get() != "none":
-                if self.enumerated_prefix_var.get():
-                    enum_num = self.global_prefix_counter
-                    self.global_prefix_counter += 1
-                    
-                else:
-                    enum_num = 0
-                    
-                update_name = self.rename_advance(
-                    original=org_name,
-                    new_name_val=new_name_val,
-                    prefix_val=prefix_val,
-                    suffix_val=suffix_val,
-                    enumerated_prefix=self.enumerated_prefix_var.get(),
-                    enumeration_number=enum_num
-                )
-            else:
-                base, ext = os.path.splitext(org_name)
-                if self.suffix_mode.get() == "delete":
-                    base = base.split("_", 1)[1]
-                    
-                new_base = new_name_val if new_name_val else base
-                if prefix_val:
-                    if self.enumerated_prefix_var.get():
-                        new_base = f"{prefix_val}{self.global_prefix_counter:02d}_{new_base}"
-                        self.global_prefix_counter += 1
+            rename_items = []
+            items_to_remove = []
+            
+            #To Filter the files to be mark "OK✓" before renaming.
+            for item_id in self.view.tree.get_children():
+                current_values = self.view.tree.item(item_id, "values")
+                if current_values[0] == "✓":
+                    file_path = self.item_to_file.get(item_id)
+                    if file_path:
+                        rename_items.append(file_path)
+                        items_to_remove.append(item_id)
                         
-                    else:
-                        new_base = f"{prefix_val}_{new_base}"
-                        
-                if suffix_val:
-                    new_base = f"{new_base}_{suffix_val}"
-                    
-                update_name = new_base + ext
+            
+            if not rename_items:
+                self.view.show_warning("No Files selected for renaming, please mark files!!!")
+                return 
+            
+            #Rename Files
+            rename_pairs = BatcherModel.rename_files(
+                rename_items,
+                new_name_val,
+                prefix_val,
+                suffix_val,
+                self.separator_var.get(),
+                self.mode_var.get(),
+                self.enumerated_prefix_var.get(),
+                self.suffix_mode.get()
+            )
+            
+            for old_path, new_path in rename_pairs:
+                old_name = os.path.basename(old_path)
+                new_name = os.path.basename(new_path)
                 
-            base_new, ext_new = os.path.splitext(update_name)
+                self.view.history_tree.insert("", "end", values=(old_name, new_name, "Renamed"))
+            self.view.show_info(f"Renamed {len(rename_pairs)} items successfully!!")
             
-            if os.path.exists(os.path.join(dir_name, update_name)) or update_name in new_files:
-                counter = 1
-                candidate = f"{base_new}_{counter:03d}{ext_new}"
+            #--self.view.clear_file_tree() replace - this line delete all 
+            #Check if exists elements peding to renaming in the Tree
+            for item_id in items_to_remove:
+                self.view.tree.delete(item_id)
+                if item_id in self.item_to_file:
+                    del self.item_to_file[item_id]
+            
+        except Exception as e:
+            self.view.show_warning(f"Error: {e}")
+        
+        
+    def on_drop(self, event):
+        paths = self.root.tk.splitlist(event.data)
+        clean_paths = []
+        
+        for p in paths:
+            if os.path.exists(p):
+                clean_paths.append(p)
                 
-                while os.path.exists(os.path.join(dir_name, candidate)) or candidate in new_files:
-                    counter += 1
-                    candidate = f"{base_new}_{counter:03d}{ext_new}"
-                    
-                update_name = candidate
-            new_path = os.path.join(dir_name, update_name)
+        self._add_files_and_folders(clean_paths)
+        
+    def _add_files_and_folders(self, path_list):
+        new_files = [f for f in path_list if f not in self.selected_files]
+        self.selected_files.extend(new_files)
+           
+        for file in new_files:
+            name = os.path.basename(file)
+            display_type = "[Folder]" if os.path.isdir(file) else "[File]"
             
+            dis_text = f"{display_type} {name}"
+            val_lis = ["✓", dis_text, "", "Pending"]
             
-            try:
-                os.rename(file_path, new_path)            
-            except Exception as e:
-                self.view.show_warning(f"Could not rename {org_name}: {e}")
-                continue
+            if self.view and hasattr(self.view, 'tree'):
+                item_id = self.view.tree.insert("","end",values=val_lis)
+                self.item_to_file[item_id] = file
             
-            new_files.append(new_path)
-            self.view.history_tree.insert("", "end", values=(org_name, update_name, "Renamed"))
-            self.view.tree.item(item_id, values=["✓", org_name, update_name, "Renamed"])
-            rename_items.append(item_id)
-            if file_path in self.selected_files:
-                self.selected_files.remove(file_path)
-                
-            del self.item_to_file[item_id]
-            
-        for item_id in rename_items:
-            self.view.tree.delete(item_id)
-            
-        self.view.show_info("!! Files renamed successfully !!")
-            
-            
+        
     def reset_fields(self):
         
         self.new_name.set("")     

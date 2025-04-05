@@ -9,12 +9,14 @@ class BatcherView:
     
     def __init__(self, root):
         
+        #super().__init__(root)
+        
         self.root = root
         self.root.title("Batcher Renamer")
         self.root.geometry("800x600")
         
-        self.vm = BatcherViewModel(self.root)
-        self.vm.set_view(self)
+        
+       
         
         #Area - Canvas/Scrollbar for layout
         self.canvas = tk.Canvas(self.root)
@@ -50,8 +52,13 @@ class BatcherView:
                            
                            ]
         
+        self.vm = BatcherViewModel(self.root)
+        self.vm.set_view(self)
         
         self.create_widgets()
+        
+        self.vm.register_tree(self.tree)
+      
         
     def create_widgets(self):
         
@@ -75,9 +82,15 @@ class BatcherView:
                   background="#75A9A2").pack(pady=10)
         
         tk.Button(main_frame,
+                  text="Select Folders",
+                  command=self.select_folders,
+                  background="#75a9f2").pack(pady=10)
+        
+        
+        tk.Button(main_frame,
                   text="Clear Files",
                   command=self.clear_file_tree,
-                  background="#FFADC9").pack(side="top", anchor="ne", pady=10)
+                  background="#FFADC9").pack(side="top", anchor="nw", pady=10)
         
         tree_frame = tk.Frame(main_frame)
         tree_frame.pack(pady=5, fill="x")
@@ -89,7 +102,7 @@ class BatcherView:
         
         self.tree.heading("Select", text="Select")
         self.tree.heading("Original", text="Original")
-        self.tree.heading("New Name", text="Original")
+        self.tree.heading("New Name", text="New Name")
         self.tree.heading("Status", text="Status")
         
         self.tree.column("Select", width=50)
@@ -106,13 +119,13 @@ class BatcherView:
         self.tree.configure(yscrollcommand=tree_scrollbar.set)
         
         #Area History
-        tk.Label(main_frame, text="History Chanes").pack(pady=5)
+        tk.Label(main_frame, text="History Changes").pack(pady=5)
         
         history_frame = tk.Frame(main_frame)
         history_frame.pack(pady=5, fill="x")
         
         tk.Button(history_frame, text="Clear History",
-                  command=self.clear_history, background="#FFADC9").pack(side="top", anchor="ne", padx=5, pady=12)
+                  command=self.clear_history, background="#FFADC9").pack(side="top", anchor="nw", padx=5, pady=12)
         
         self.history_tree = ttk.Treeview(history_frame, 
                                          columns=("Original", "New Name", "Status"),
@@ -191,11 +204,13 @@ class BatcherView:
 
 
     def select_files(self):
-       
         self.vm.select_files()
             
-
-  
+    def select_folders(self):
+        self.vm.select_folders()
+        
+    def select_onefoldes(self):
+        self.vm.select_onefolder()
 
     def clear_file_tree(self):
         self.tree.delete(*self.tree.get_children())
