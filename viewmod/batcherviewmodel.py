@@ -117,15 +117,19 @@ class BatcherViewModel:
             # Verificar si la carpeta no está ya en la lista de archivos seleccionados
             if folder not in self.selected_files:
                 self.selected_files.append(folder)
-                self._add_files_and_folders([folder])
-
-            val_lis = ["✓", f"[Folder] {os.path.basename(folder)}", "", "Pending"]
-            # Mostrar la carpeta seleccionada en el árbol
-            self.view.tree.insert("", "end", values=val_lis)
-
-            self.last_selected_folder = folder
-            self.save_last_selected_folder()
-            
+                
+                name = os.path.basename(folder)
+                dis_text = f"[Folder] {name}"
+                val_lis = ["✓", dis_text, "", "Pending"]
+                
+                #self._add_files_and_folders([folder])
+                item_id = self.view.tree.insert("","end", values=val_lis)
+                self.item_to_file[item_id] = folder
+                # Mostrar la carpeta seleccionada en el árbol
+                
+                self.last_selected_folder = initial_dir
+                self.save_last_selected_folder()
+                
     
     def toggle_checkbox(self, event):
         region = self.view.tree.identify_region(event.x, event.y)
@@ -221,7 +225,13 @@ class BatcherViewModel:
         self._add_files_and_folders(clean_paths)
         
     def _add_files_and_folders(self, path_list):
-        new_files = [f for f in path_list if f not in self.selected_files]
+        
+        #Normalizer paths
+        normalized_lis = [os.path.abspath(p) for p in path_list]
+        current_files_set = set(map(os.path.abspath, self.selected_files))
+        
+        #new_files = [f for f in path_list if f not in self.selected_files]
+        new_files = [f for f in normalized_lis if f not in current_files_set]
         self.selected_files.extend(new_files)
            
         for file in new_files:
@@ -234,6 +244,25 @@ class BatcherViewModel:
             if self.view and hasattr(self.view, 'tree'):
                 item_id = self.view.tree.insert("","end",values=val_lis)
                 self.item_to_file[item_id] = file
+         
+    
+    def delete_selected_item(self):
+        selected_items = self.view.tree.selection()
+        
+        if not selected_items:
+            self.view.show_warning("No Item Selected to remove.")
+            return
+        
+        for item_id in selected_items:
+            file_path = self.item_to_file.get(item_id)
+
+            if file_path and file_path in self.selected_files:
+                self.selected_files.remove(file_path)
+                
+            if item_id in self.item_to_file:
+                del self.item_to_file[item_id]
+        
+            self.view.tree.delete(item_id)
             
         
     def reset_fields(self):

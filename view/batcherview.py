@@ -63,7 +63,7 @@ class BatcherView:
     def create_widgets(self):
         
         main_frame = tk.Frame(self.scrollbar_frame)
-        main_frame.pack(padx=50, pady=50, expand=True)
+        main_frame.pack(padx=50, pady=50, fill="both", expand=True)
 
         global_check_frame = tk.Frame(main_frame)
         global_check_frame.pack(pady=5, anchor="w")
@@ -79,19 +79,23 @@ class BatcherView:
         tk.Button(main_frame, 
                   text="Select Files", 
                   command=self.select_files,
-                  background="#75A9A2").pack(pady=10)
+                  background="#75A9A2").pack(side="top", pady=5, anchor="center")
         
         tk.Button(main_frame,
                   text="Select Folders",
                   command=self.select_folders,
-                  background="#75a9f2").pack(pady=10)
+                  background="#75a9f2").pack( pady=5, anchor="ne")
         
         
-        tk.Button(main_frame,
-                  text="Clear Files",
+        btn_tree_frameTop = tk.Frame(main_frame)
+        btn_tree_frameTop.pack(pady=5, fill="both")
+        
+        tk.Button(btn_tree_frameTop,
+                  text="Clear All Files",
                   command=self.clear_file_tree,
-                  background="#FFADC9").pack(side="top", anchor="nw", pady=10)
+                  background="#FFADC9").pack(side="left",pady=10, anchor="nw")
         
+       
         tree_frame = tk.Frame(main_frame)
         tree_frame.pack(pady=5, fill="x")
         
@@ -118,8 +122,14 @@ class BatcherView:
         tree_scrollbar.pack(side="right", fill="y")
         self.tree.configure(yscrollcommand=tree_scrollbar.set)
         
+        tk.Button(main_frame,
+                  text="Clear Item",
+                  command=self.delete_select_item,
+                  background="#F000FD").pack( side="right",pady=5, anchor="ne")
+        
+        
         #Area History
-        tk.Label(main_frame, text="History Changes").pack(pady=5)
+        tk.Label(main_frame, text="History Changes").pack(pady=15)
         
         history_frame = tk.Frame(main_frame)
         history_frame.pack(pady=5, fill="x")
@@ -151,16 +161,16 @@ class BatcherView:
         self.history_tree.configure(yscrollcommand=history_scrollbar.set)
         
         pan_ops_frame = tk.Frame(main_frame)
-        pan_ops_frame.pack(anchor="e", fill="x")
+        pan_ops_frame.pack(pady=5, fill="x")
         
         tk.Button(pan_ops_frame, text="Reset All Field",
                   command=self.vm.reset_fields, 
-                  background="#ED6A5A").pack(side="left", padx=5, pady=10)
+                  background="#ED6A5A").pack(side="left",  pady=5)
         
         
-        tk.Button(main_frame, text="Rename Files", 
+        tk.Button(pan_ops_frame, text="Rename Files", 
                  command=self.vm.rename_files,
-                 background="#396693").pack(pady=10, anchor="e")
+                 background="#396693").pack(side="right", pady=5)
         
         #Fields Inputs Operations Prefix/Suffix
         tk.Label(main_frame, text="New Name: ").pack(pady=5)
@@ -209,8 +219,12 @@ class BatcherView:
     def select_folders(self):
         self.vm.select_folders()
         
+
     def select_onefoldes(self):
         self.vm.select_onefolder()
+        
+    def delete_select_item(self):
+        self.vm.delete_selected_item()
 
     def clear_file_tree(self):
         self.tree.delete(*self.tree.get_children())
