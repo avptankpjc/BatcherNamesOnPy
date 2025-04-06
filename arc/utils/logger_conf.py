@@ -2,13 +2,23 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from pathlib import Path
 
 
-log_folder = "logs"
+user_docs = str(Path(os.getenv('USERPROFILE')) / "Documents")
+log_folder = os.path.join(user_docs, "BatcherNameOnPy", "logs")
 
-if not os.path.exists(log_folder):
-    os.makedirs(log_folder) 
+
+#Create the Directory
+try:
+    os.makedirs(log_folder, exist_ok=True)
     
+except PermissionError:
+    print(f"Permission denied to create the log directory at {log_folder}")
+    log_folder = user_docs
+    os.makedirs(log_folder, exist_ok=True)
+    
+
 log_path = os.path.join(log_folder, "regis.log")
 
 
@@ -24,7 +34,6 @@ formatter = logging.Formatter(
 )
 
 log_handler.setFormatter(formatter)
-
 
 #Create the Log
 
