@@ -17,16 +17,16 @@ def runapp():
     
     root = TkinterDnD.Tk()
     
-    icon_filename = "A00_2_Logo_BatcherName.ico"
-    icon_relative_path = ""
+    icon_filename = "A01_2_Logo_Icon_BatcherName.ico"
+    icon_relative_path = "assets/img/icon_logo/A01_2_Logo_Icon_BatcherName.ico"
     
     if getattr(sys, "frozen", False):
         base_dir = os.path.dirname(sys.executable)
-        
+        icon_path = os.path.join(base_dir, icon_filename)
     else:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        
-    icon_path = os.path.join(base_dir, icon_relative_path)
+        #Mode Develop
+        base_dir = os.path.dirname(os.path.abspath(__file__))  
+        icon_path = os.path.join(base_dir, icon_relative_path)
     
     if os.path.exists(icon_path):
         try:

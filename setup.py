@@ -27,7 +27,7 @@ build_exe_options = {
             "jinja2"
         ],
     "include_files": [
-        ("assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico"),
+        ("assets/img/icon_logo/A01_2_Logo_Icon_BatcherName.ico"),
         ("model", "model"),
         ("view", "view"),
         ("viewmod", "viewmod"),
@@ -51,9 +51,10 @@ setup(
     description="Applications for rename files by batch",
     author="Avptankpowerjc",
     options={"build_exe":build_exe_options},
-    executables=[Executable("apprun.py", base=base, icon="assets/img/icon_logo/A00_1_Logo_BatcherName_256.ico") ]
+    executables=[Executable(
+        "apprun.py", 
+        base=base, 
+        icon="assets/img/icon_logo/A01_2_Logo_Icon_BatcherName.ico",
+        target_name="BatcherNameApp.exe" ) ]
 )
-
-
-
 
