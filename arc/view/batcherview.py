@@ -2,7 +2,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-from viewmod.batcherviewmodel import BatcherViewModel
+from arc.viewmod.batcherviewmodel import BatcherViewModel
 
 
 class BatcherView:

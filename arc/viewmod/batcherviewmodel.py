@@ -6,8 +6,8 @@ import os, re, sys
 from tkinter import ttk, filedialog, messagebox
 from tkinterdnd2 import TkinterDnD, DND_FILES
 
-from model.batchermodel import BatcherModel
-from utils.logger_conf import logger
+from arc.model.batchermodel import BatcherModel
+from arc.utils.logger_conf import logger
 
 
 class BatcherViewModel:

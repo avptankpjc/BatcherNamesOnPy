@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinterdnd2 import TkinterDnD
 
-from view.batcherview import BatcherView
+from arc.view.batcherview import BatcherView
 
 
 

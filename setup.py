@@ -28,10 +28,10 @@ build_exe_options = {
         ],
     "include_files": [
         ("assets/img/icon_logo/A01_2_Logo_Icon_BatcherName.ico"),
-        ("model", "model"),
-        ("view", "view"),
-        ("viewmod", "viewmod"),
-        ("utils", "utils")
+        ("arc/model", "arc/model"),
+        ("arc/view", "arc/view"),
+        ("arc/viewmod", "arc/viewmod"),
+        ("arc/utils", "arc/utils")
     ]
     #"include_files":[
     #    (tcl_dll, "tcl86t.dll"),
