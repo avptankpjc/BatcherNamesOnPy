@@ -8,7 +8,7 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 
 from arc.model.batchermodel import BatcherModel
 from arc.utils.logger_conf import logger
-
+from pathlib import Path
 
 class BatcherViewModel:
     
@@ -19,8 +19,7 @@ class BatcherViewModel:
         
         self.selected_files = []
         
-        self.last_selected_folder = self.load_last_selected_folder()
-        
+       
         #Variables Inputs
         self.new_name = tk.StringVar()
         self.prefix = tk.StringVar()
@@ -44,7 +43,9 @@ class BatcherViewModel:
         
         self.global_prefix_counter = 1
         
-        
+        #Get Path Docs
+        self.user_docs = str(Path(os.getenv('USERPROFILE')) / "Documents")
+        self.last_selected_folder = self.load_last_selected_folder()
         
     def set_view(self, view):
         self.view = view
@@ -59,9 +60,15 @@ class BatcherViewModel:
         """Save the last folder selected"""
         try:
             
-            logger.info("Initialize Save Files")
+            logger.info("Initialize Save Files")   
+            log_folder = os.path.join(self.user_docs, "BatcherNameOnPy")
             
-            with open("last_selected_folder.txt","w") as file:
+            if not os.path.exists(log_folder):
+                os.makedirs(log_folder)
+                
+            file_path = os.path.join(log_folder, "last_selected_folder.txt")
+            
+            with open(file_path,"w") as file:
                 file.write(self.last_selected_folder)
         
         except Exception as e:
@@ -70,9 +77,13 @@ class BatcherViewModel:
     def load_last_selected_folder(self):
         """Load the last Folder Selected"""
         try:
+            #Path Update Config
+            file_path = os.path.join(self.user_docs, 
+                                     "BatcherNameOnPy",
+                                     "last_selected_folder.txt")
             
-            if os.path.exists("last_selected_folder.txt"):
-                with open("last_selected_folder.txt", "r") as file:
+            if os.path.exists(file_path):
+                with open(file_path, "r") as file:
                     folder =  file.read().strip()
                     if os.path.isdir(folder):
                         return folder
