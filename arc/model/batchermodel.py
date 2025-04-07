@@ -10,16 +10,19 @@ class BatcherModel:
                      prefix,suffix,
                      separator,mode,
                      enumerated_prefix,
-                     suffix_mode
+                     suffix_mode,
+                     offset_enabled=False,
+                     offset_value=0,
+                     offset_partial=False
                      ):
+        
         rename_files = []
         global_prefix_counter = 1
         
              
-        for index, item_path in enumerate(path_list):
+        for  item_path in path_list:
             
             directory, old_name = os.path.split(item_path)
-       
             is_folder = os.path.isdir(item_path)
             
             if is_folder:
@@ -33,13 +36,25 @@ class BatcherModel:
                 base_name, new_nameformat,
                 prefix, suffix, separator,
                 mode, enumerated_prefix,
-                suffix_mode,global_prefix_counter
+                suffix_mode, global_prefix_counter,
+                offset_enabled=offset_enabled,
+                offset_value=offset_value,
+                offset_partial=offset_partial
             )
             
-            #Concat only is file
+            #Concat only if it's a file
             new_name_full = new_name + extension
-            new_path = os.path.join(directory, new_name_full)
+            new_path = os.path.join(directory, 
+                                    new_name_full)
 
+            #Avoid the Conflit with the new Name, if is the same at the current
+            if os.path.normpath(item_path) == os.path.normpath(new_path):
+                rename_files.append((item_path, new_path))
+                global_prefix_counter += 1
+                continue
+            
+            
+            #Ensure no name conflicts
             candidate = new_path
             counter = 1
             
@@ -51,8 +66,7 @@ class BatcherModel:
             
             new_path = candidate
              
-            try:
-                
+            try:        
                 os.rename(item_path, new_path)
                 rename_files.append((item_path, new_path))
                 
@@ -65,19 +79,91 @@ class BatcherModel:
     
     
     @staticmethod
+    def get_prefix(prefix, enumerated_prefix, enumeration_number):
+        return f"{prefix}{enumeration_number:02d}" if prefix and enumerated_prefix else prefix
+    
+    @staticmethod
     def rename_advance(base_name, new_nameformat,
                        prefix, suffix,
                        separator, mode,
                        enumerated_prefix,
                        suffix_mode,
-                       enumeration_number):
+                       enumeration_number,
+                       offset_enabled=False,
+                       offset_value=0,
+                       offset_partial=False
+                       ):
+        
+        def clean_join(parts):
+            return separator.join([p for p in parts if p.strip(separator)])
+    
+        #Offset Advance
+        if offset_enabled and separator in base_name:
+            parts = base_name.split(separator)
+            offset = offset_value
+            
+            #Ensure the offset is within range
+            if offset < 0 or offset >= len(parts): 
+               return base_name
+
+            if mode == "replace_before":
+                 
+                if offset_partial:
+                    #Replace partial: only in position
+                    parts[offset] = new_nameformat if new_nameformat is not None else parts[offset]
+                else:
+                    #Replace total: Since the position set
+                    clean_name = new_nameformat.strip(separator) if new_nameformat else ""
+                    parts = [clean_name] + parts[offset:]
+                             
+             
+            
+            elif mode == "replace_after":
+                if offset_partial:
+                    parts[offset] = new_nameformat if new_nameformat is not None else parts[offset]
+                    
+                else:
+                    clean_name = new_nameformat.strip(separator) if new_nameformat else ""
+                    parts = parts[:offset+1] + [clean_name]
+                             
+            else:
+                if offset_partial:
+                    parts[offset] = new_nameformat if new_nameformat is not None else parts[offset]
+                    
+                else:
+                    clean_name = new_nameformat.strip(separator) if new_nameformat else ""
+                    parts = parts[:offset] + [clean_name] + parts[offset+1:]
+
+            
+            new_name = clean_join(parts)
+                
+            #Add Prefix
+            prex = BatcherModel.get_prefix(prefix, 
+                                           enumerated_prefix,
+                                           enumeration_number)
+            
+            if prex:
+                new_name = prex + separator + new_name 
+                
+            #Add Suffix
+            if suffix:
+                new_name = new_name + (separator + suffix if not suffix.startswith(separator) else suffix)
+
+            new_name = re.sub(rf"{re.escape(separator)}+", separator, new_name)
+            
+            return new_name
+            
+            
+               
+        #---------------------
+        #------------ Mode Normal Without Offset -------------
+        #---------------------
         
         if separator == "none" or separator not in base_name:
             parts = []
             
             if prefix:
-                prex = f"{prefix}{enumeration_number:02d}" if enumerated_prefix else prefix
-                parts.append(prex)
+                parts.append(BatcherModel.get_prefix(prefix, enumerated_prefix, enumeration_number))
                             
             parts.append(new_nameformat if new_nameformat else base_name) 
 
@@ -86,7 +172,7 @@ class BatcherModel:
                 
             return "_".join(parts)
         
-        
+        #Handle replace after mode
         if mode == "replace_after":
             
             prefix_part, remainder = base_name.split(separator, 1)
@@ -100,9 +186,8 @@ class BatcherModel:
                 core_part = remainder
                 orig_suffix = ""
                 
-            prex_n = f"{prefix}{enumeration_number:02d}" if prefix and enumerated_prefix else (prefix if prefix else prefix_part)
-            new_prefix = (prex_n)
-            
+         
+            new_prefix = BatcherModel.get_prefix(prefix, enumerated_prefix, enumeration_number) if prefix else prefix_part
             new_core = new_nameformat if new_nameformat else core_part 
            
             if suffix:
@@ -123,11 +208,11 @@ class BatcherModel:
             else:
                 left_part = base_name
                 orig_suffix = ""
-            new_text = new_nameformat if new_nameformat else (
-                f"{prefix}{enumeration_number:02d}" 
-                if (prefix and enumerated_prefix) 
-                else (prefix if prefix else left_part )
-            )
+                
+                
+         
+            #Modify the base name and apply the prefix/suffix
+            new_text = new_nameformat if new_nameformat else left_part
             
             if suffix:
                 new_suffix = suffix if suffix.startswith(separator) else separator + suffix
@@ -141,9 +226,7 @@ class BatcherModel:
             #Mode "None"
             parts = []
             if prefix:
-                prex_e = f"{prefix}{enumeration_number:02d}" if enumerated_prefix else prefix
-                parts.append(prex_e)
-                         
+                parts.append(BatcherModel.get_prefix(prefix, enumerated_prefix, enumeration_number))
             parts.append(new_nameformat if new_nameformat else base_name)
             
             if suffix:

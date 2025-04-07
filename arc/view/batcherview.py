@@ -16,8 +16,6 @@ class BatcherView:
         self.root.geometry("800x600")
         
         
-       
-        
         #Area - Canvas/Scrollbar for layout
         self.canvas = tk.Canvas(self.root)
         self.scrollbar = ttk.Scrollbar(self.root, 
@@ -196,9 +194,37 @@ class BatcherView:
         for mode_val, mode_label in self.list_modes:
             tk.Radiobutton(main_frame, text=mode_label, variable=self.vm.mode_var, value=mode_val).pack(anchor="w")
         
-        tk.Label(main_frame, text="Suffix Handling").pack(pady=10)
-        tk.Checkbutton(main_frame, text="Enumerated Prefix", variable=self.vm.enumerated_prefix_var).pack(pady=10)
+        # -- Prefix Enumeration
+        tk.Label(main_frame, text="Prefix Enumeration").pack(pady=10)
+        tk.Checkbutton(main_frame, 
+                       text="Enumerated Prefix", 
+                       variable=self.vm.enumerated_prefix_var).pack(pady=10, anchor="w")
+
+        # ---- Offset Options ---
+        tk.Label(main_frame, text="Offset Options").pack(pady=10)
+        tk.Checkbutton(
+            main_frame,
+            text="Enabled Offset Renameing",
+            variable=self.vm.offset_enabled_var
+        ).pack(anchor="w", pady=10)
         
+        offset_frame = tk.Frame(main_frame)
+        offset_frame.pack(anchor="w", pady=5)
+        
+        tk.Label(offset_frame, text="Offset Position:").pack(side="left")
+        tk.Entry(offset_frame, 
+                 textvariable=self.vm.offset_value_var,
+                 width=5).pack(side="left", pady=10)
+        
+        tk.Checkbutton(
+            main_frame,
+            text="Partial Replacement Only (at position",
+            variable=self.vm.offset_partial_var
+        ).pack(anchor="w", pady=10)
+        
+        
+        # --- Suffix Handling ----
+        tk.Label(main_frame, text="Suffix Handling").pack(pady=10)
         
         tk.Radiobutton(main_frame, text="None (Neutral)",variable=self.vm.suffix_mode,  value="none").pack(anchor="w")
         tk.Radiobutton(main_frame, text="Keep Suffix",   variable=self.vm.suffix_mode,  value="keep").pack(anchor="w")

@@ -34,6 +34,11 @@ class BatcherViewModel:
         self.enumerated_prefix_var = tk.BooleanVar()   
         self.suffix_mode = tk.StringVar(value="none")
         
+        #Offset Config
+        self.offset_enabled_var = tk.BooleanVar(value=False)
+        self.offset_value_var = tk.IntVar(value=0)
+        self.offset_partial_var = tk.BooleanVar(value=False)
+        
         #Historial - control
         self.file_data = {}
         self.check_vars = []
@@ -204,7 +209,10 @@ class BatcherViewModel:
                 self.separator_var.get(),
                 self.mode_var.get(),
                 self.enumerated_prefix_var.get(),
-                self.suffix_mode.get()
+                self.suffix_mode.get(),
+                offset_enabled=self.offset_enabled_var.get(),
+                offset_value=self.offset_value_var.get(),
+                offset_partial=self.offset_partial_var.get()
             )
             
             for old_path, new_path in rename_pairs:
@@ -286,6 +294,8 @@ class BatcherViewModel:
         self.mode_var.set("none")
         self.suffix_mode.set("none")
         self.enumerated_prefix_var.set(False)
-            
+        self.offset_enabled_var.set(False)
+        self.offset_value_var.set(0)
+        self.offset_partial_var.set(False)
         
         
