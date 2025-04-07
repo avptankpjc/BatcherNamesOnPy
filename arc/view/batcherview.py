@@ -197,9 +197,29 @@ class BatcherView:
         # -- Prefix Enumeration
         tk.Label(main_frame, text="Prefix Enumeration").pack(pady=10)
         tk.Checkbutton(main_frame, 
-                       text="Enumerated Prefix", 
-                       variable=self.vm.enumerated_prefix_var).pack(pady=10, anchor="w")
+                       text="Enumerated Prefix",
+                       variable=self.vm.enumerated_prefix_var,
+                       command=self.toggle_enumeration_spinbox
+                      ).pack(pady=10, anchor="w")
 
+        #--- Enumeration Offset ---
+        tk.Checkbutton(main_frame,
+                       text="Enabled Enumeration Offset",
+                       variable=self.vm.enum_enabled_offset_var,
+                       command=self.toggle_enumeration_spinbox
+                       ).pack(anchor="w", pady=5)
+        
+        self.enumeration_spinbox = tk.Spinbox(
+            main_frame,
+            from_=1,
+            to=9999,
+            textvariable=self.vm.enum_offset_var,
+            width=5
+        )
+        
+        self.enumeration_spinbox.pack(anchor="w", pady=2)
+        self.enumeration_spinbox.configure(state="disabled")
+        
         # ---- Offset Options ---
         tk.Label(main_frame, text="Offset Options").pack(pady=10)
         tk.Checkbutton(
@@ -271,4 +291,10 @@ class BatcherView:
         messagebox.showinfo("Info", msg)
         
     
-
+    def toggle_enumeration_spinbox(self):
+        
+        if (self.vm.enumerated_prefix_var.get() and 
+            self.vm.enum_enabled_offset_var.get()):
+            self.enumeration_spinbox.configure(state="normal")
+        else:
+            self.enumeration_spinbox.configure(state="disabled")

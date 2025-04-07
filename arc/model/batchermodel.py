@@ -13,11 +13,14 @@ class BatcherModel:
                      suffix_mode,
                      offset_enabled=False,
                      offset_value=0,
-                     offset_partial=False
+                     offset_partial=False,
+                     enum_offset=1,
+                     enum_offset_enabled=False
                      ):
         
         rename_files = []
-        global_prefix_counter = 1
+        
+        global_prefix_counter = enum_offset if enumerated_prefix and enum_offset_enabled else 1
         
              
         for  item_path in path_list:
@@ -213,6 +216,13 @@ class BatcherModel:
          
             #Modify the base name and apply the prefix/suffix
             new_text = new_nameformat if new_nameformat else left_part
+            
+            
+            prex = BatcherModel.get_prefix(prefix, enumerated_prefix, enumeration_number)
+            
+            if prex:
+                new_text = prex + separator + new_text
+            
             
             if suffix:
                 new_suffix = suffix if suffix.startswith(separator) else separator + suffix

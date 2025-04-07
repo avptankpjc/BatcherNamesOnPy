@@ -39,6 +39,11 @@ class BatcherViewModel:
         self.offset_value_var = tk.IntVar(value=0)
         self.offset_partial_var = tk.BooleanVar(value=False)
         
+        #Offset Enumeration 
+        self.enum_enabled_offset_var = tk.BooleanVar(value=False)
+        self.enum_offset_var = tk.IntVar(value=1)
+        
+        
         #Historial - control
         self.file_data = {}
         self.check_vars = []
@@ -212,7 +217,9 @@ class BatcherViewModel:
                 self.suffix_mode.get(),
                 offset_enabled=self.offset_enabled_var.get(),
                 offset_value=self.offset_value_var.get(),
-                offset_partial=self.offset_partial_var.get()
+                offset_partial=self.offset_partial_var.get(),
+                enum_offset=self.enum_offset_var.get(),
+                enum_offset_enabled=self.enum_enabled_offset_var.get()
             )
             
             for old_path, new_path in rename_pairs:
@@ -297,5 +304,9 @@ class BatcherViewModel:
         self.offset_enabled_var.set(False)
         self.offset_value_var.set(0)
         self.offset_partial_var.set(False)
+        self.enum_enabled_offset_var.set(False)
+        self.enum_offset_var.set(1)
+        
+        self.view.toggle_enumeration_spinbox()
         
         
