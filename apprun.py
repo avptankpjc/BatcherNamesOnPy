@@ -54,7 +54,7 @@ def runapp():
     status_frame = tk.Frame(root, bd=1, relief=tk.SUNKEN)
     status_frame.pack(side=tk.BOTTOM, fill=tk.X)
     
-    version_label = tk.Label(status_frame, text="[1.2.0]", anchor="e")
+    version_label = tk.Label(status_frame, text="[1.2.1]", anchor="e")
     version_label.pack(fill=tk.X)
     
     #Start App
